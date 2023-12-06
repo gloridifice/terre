@@ -2,7 +2,7 @@ use std::env;
 use std::io::{BufReader, Cursor};
 use anyhow::*;
 use bytemuck::bytes_of;
-use wgpu::Device;
+use wgpu::{Device, Queue};
 use wgpu::util::DeviceExt;
 use crate::{model, texture};
 use crate::model::Material;
@@ -32,8 +32,7 @@ pub async fn load_texture(
 pub async fn load_model(
     file_name: &str,
     device: &Device,
-    queue: &wgpu::Queue,
-    layout: &wgpu::BindGroupLayout,
+    queue: &Queue,
 ) -> anyhow::Result<model::Model> {
     let obj_text = load_string(file_name).await?;
     let obj_cursor = Cursor::new(obj_text);
@@ -55,25 +54,10 @@ pub async fn load_model(
     let mut materials: Vec<Material> = Vec::new();
     for m in obj_materials? {
         let diffuse_texture = load_texture(&m.diffuse_texture, device, queue).await?;
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
-                }
-            ],
-            label: None,
-        });
 
         materials.push(model::Material {
             name: m.name,
             diffuse_texture,
-            bind_group
         })
     }
 

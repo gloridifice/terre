@@ -1,21 +1,22 @@
-use cgmath::{InnerSpace, SquareMatrix, Vector3};
+use std::ops::Add;
+use cgmath::{InnerSpace, Quaternion, SquareMatrix, Vector3, Zero};
 use bytemuck::Zeroable;
 use winit::event::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
 use crate::OPENGL_TO_WGPU_MATRIX;
 
 pub struct Camera {
-    eye: cgmath::Point3<f32>,
-    target: cgmath::Point3<f32>,
-    up: cgmath::Vector3<f32>,
+    pub eye: cgmath::Point3<f32>,
+    pub target: cgmath::Point3<f32>,
+    pub up: cgmath::Vector3<f32>,
     pub aspect: f32,
-    fovy: f32,
-    znear: f32,
-    zfar: f32,
+    pub fovy: f32,
+    pub znear: f32,
+    pub zfar: f32,
 }
 
 impl Camera {
-    pub fn new(aspect: f32) -> Self{
-        Self{
+    pub fn new(aspect: f32) -> Self {
+        Self {
             eye: (0.0, 5.0, -10.0).into(),
             target: (0.0, 0.0, 0.0).into(),
             up: cgmath::Vector3::unit_y(),
@@ -31,15 +32,25 @@ impl Camera {
         proj * view
     }
 
-    pub fn move_position(&mut self, vec: Vector3<f32>){
+    pub fn forward(&self) -> Vector3<f32> {
+        self.target - self.eye
+    }
+    pub fn move_position(&mut self, vec: Vector3<f32>) {
         self.eye += vec;
         self.target += vec;
+    }
+
+    pub fn rotate(&mut self, quaternion: &Quaternion<f32>){
+        let offset = self.target - self.eye;
+        let a = quaternion * offset;
+        self.target = self.eye.add(a);
     }
 }
 
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct CameraUniform {
+    view_position: [f32; 4],
     view_proj: [[f32; 4]; 4],
 }
 
@@ -50,12 +61,14 @@ unsafe impl bytemuck::Pod for CameraUniform {}
 impl CameraUniform {
     pub fn new() -> Self {
         Self {
+            view_position: cgmath::Vector4::zero().into(),
             view_proj: cgmath::Matrix4::identity().into(),
         }
     }
 
-    pub fn update_view_proj(&mut self, camera: &Camera) {
+    pub fn update(&mut self, camera: &Camera) {
         self.view_proj = (OPENGL_TO_WGPU_MATRIX * camera.build_view_projection_matrix()).into();
+        self.view_position = [camera.eye.x, camera.eye.y, camera.eye.y, 1f32];
     }
 }
 
@@ -82,17 +95,10 @@ impl CameraController {
         }
     }
 
-    pub fn process_events(&mut self, event: &WindowEvent) -> bool {
-        match event {
-            WindowEvent::KeyboardInput {
-                input:
-                KeyboardInput {
-                    state,
-                    virtual_keycode: Some(keycode),
-                    ..
-                },
-                ..
-            } => {
+    pub fn process_events(&mut self, state: &ElementState, keycode: &Option<VirtualKeyCode>) -> bool {
+        match keycode {
+            None => false,
+            Some(keycode) => {
                 let is_pressed = *state == ElementState::Pressed;
                 match keycode {
                     VirtualKeyCode::Space => {
@@ -122,7 +128,6 @@ impl CameraController {
                     _ => false,
                 }
             }
-            _ => false,
         }
     }
 
@@ -142,7 +147,7 @@ impl CameraController {
             camera.move_position(forward_move * self.speed);
         }
         if self.is_backward_pressed {
-            camera.move_position(- forward_move * self.speed);
+            camera.move_position(-forward_move * self.speed);
         }
         if self.is_up_pressed {
             camera.move_position(Vector3::unit_y() * self.speed);

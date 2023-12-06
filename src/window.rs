@@ -1,4 +1,5 @@
 use cgmath::num_traits::clamp;
+use winit::dpi::PhysicalPosition;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window;
@@ -23,19 +24,22 @@ impl Window {
                     ref event,
                     window_id,
                 } if window_id == self.window.id() => {
-                    // Handle window events (like resizing, or key inputs)
-                    // This is stuff from `winit` -- see their docs for more info
                     match event {
-                        WindowEvent::CloseRequested
-                        | WindowEvent::KeyboardInput {
-                            input:
-                            KeyboardInput {
-                                state: ElementState::Pressed,
-                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                        WindowEvent::KeyboardInput {
+                            input: KeyboardInput{
+                                state,
+                                virtual_keycode,
                                 ..
                             },
                             ..
-                        } => *control_flow = ControlFlow::Exit,
+                        } => callback(WindowEvents::Keyboard {state, virtual_keycode}),
+                        WindowEvent::CursorMoved {
+                            position,
+                            ..
+                        } => {
+                            callback(WindowEvents::Cursor {position})
+                        },
+                        WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
                         WindowEvent::Resized(physical_size) => callback(WindowEvents::Resized {
                             width: physical_size.width,
                             height: physical_size.height,
@@ -75,14 +79,17 @@ impl Window {
     }
 }
 
-pub enum WindowEvents {
+pub enum WindowEvents<'a> {
     Resized {
         width: u32,
         height: u32,
     },
     Keyboard {
-        state: ElementState,
-        virtual_keycode: Option<VirtualKeyCode>,
+        state: &'a ElementState,
+        virtual_keycode: &'a Option<VirtualKeyCode>,
+    },
+    Cursor{
+        position: &'a PhysicalPosition<f64>
     },
     Draw,
 }

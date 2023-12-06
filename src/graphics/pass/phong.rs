@@ -1,21 +1,17 @@
-use std::{collections::HashMap, iter, mem};
+use std::{collections::HashMap, mem};
 use bytemuck::{Pod, Zeroable};
 
-use cgmath::{InnerSpace, Rotation3, Zero};
 use wgpu::{util::DeviceExt, BindGroupLayout, Device, Queue, Surface, StoreOp};
 
 use crate::{
     camera::{Camera, CameraUniform},
-    instance::{Instance, InstanceRaw},
-    model::{self, DrawModel, Model, Vertex},
+    instance::{InstanceRaw},
+    model::{self, Vertex},
     texture,
 };
 use crate::node::Node;
 
 use super::Pass;
-
-// Constants for instances
-const NUM_INSTANCES_PER_ROW: u32 = 10;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -28,17 +24,6 @@ unsafe impl Zeroable for Globals {}
 unsafe impl Pod for Globals{}
 
 #[repr(C)]
-#[derive(Clone, Copy)]
-struct Locals {
-    position: [f32; 4],
-    color: [f32; 4],
-    normal: [f32; 4],
-    lights: [f32; 4],
-}
-unsafe impl Zeroable for Locals {}
-unsafe impl Pod for Locals{}
-
-#[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct LightUniform {
     pub position: [f32; 3],
@@ -46,6 +31,8 @@ pub struct LightUniform {
     _padding: u32,
     pub color: [f32; 3],
     _padding2: u32,
+    pub direction: [f32; 3],
+    _padding3: u32,
 }
 unsafe impl Zeroable for LightUniform {}
 unsafe impl Pod for LightUniform{}
@@ -61,25 +48,16 @@ pub struct PhongPass {
     pub global_uniform_buffer: wgpu::Buffer,
     pub global_bind_group: wgpu::BindGroup,
     pub local_bind_group_layout: BindGroupLayout,
-    local_uniform_buffer: wgpu::Buffer,
     local_bind_groups: HashMap<usize, wgpu::BindGroup>,
     // Textures
     pub depth_texture: texture::Texture,
-    // pub texture_bind_group_layout: BindGroupLayout,
     // Render pipeline
     pub render_pipeline: wgpu::RenderPipeline,
     // Lighting
     pub light_uniform: LightUniform,
     pub light_buffer: wgpu::Buffer,
-    // pub light_bind_group: wgpu::BindGroup,
-    // pub light_render_pipeline: wgpu::RenderPipeline,
     // Camera
     pub camera_uniform: CameraUniform,
-    // pub camera_buffer: wgpu::Buffer,
-    // pub camera_bind_group: wgpu::BindGroup,
-    // Instances
-    instances: Vec<Instance>,
-    instance_buffer: wgpu::Buffer,
 }
 
 impl PhongPass {
@@ -148,6 +126,8 @@ impl PhongPass {
             _padding: 0,
             color: [1.0, 1.0, 1.0],
             _padding2: 0,
+            direction: [1.0, 1.0, 0.0],
+            _padding3: 0
         };
         let light_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("[Phong] Lights"),
@@ -180,27 +160,13 @@ impl PhongPass {
             ],
         });
 
-        // Setup local uniforms
-        // Local bind group layout
-        let local_size = mem::size_of::<Locals>() as wgpu::BufferAddress;
         let local_bind_group_layout =
             device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
                 label: Some("[Phong] Locals"),
                 entries: &[
-                    // Local uniforms
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::VERTEX | wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: wgpu::BufferSize::new(local_size),
-                        },
-                        count: None,
-                    },
                     // Mesh texture
                     wgpu::BindGroupLayoutEntry {
-                        binding: 1,
+                        binding: 0,
                         visibility: wgpu::ShaderStages::FRAGMENT,
                         ty: wgpu::BindingType::Texture {
                             sample_type: wgpu::TextureSampleType::Float { filterable: true },
@@ -211,14 +177,6 @@ impl PhongPass {
                     },
                 ],
             });
-
-        // Local uniform buffer
-        let local_uniform_buffer = device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("[Phong] Locals"),
-            size: local_size,
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
 
         // Setup the render pipeline
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -271,135 +229,23 @@ impl PhongPass {
         });
 
         // Create depth texture
-        let depth_texture =
-            texture::Texture::create_depth_texture(&device, &config, "depth_texture");
-
-        // Bind the texture to the fragment shader
-        // This creates a general texture bind group
-        // let texture_bind_group_layout =
-        //     device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-        //         entries: &[
-        //             wgpu::BindGroupLayoutEntry {
-        //                 binding: 0,
-        //                 visibility: wgpu::ShaderStages::FRAGMENT,
-        //                 ty: wgpu::BindingType::Texture {
-        //                     multisampled: false,
-        //                     view_dimension: wgpu::TextureViewDimension::D2,
-        //                     sample_type: wgpu::TextureSampleType::Float { filterable: true },
-        //                 },
-        //                 count: None,
-        //             },
-        //             wgpu::BindGroupLayoutEntry {
-        //                 binding: 1,
-        //                 visibility: wgpu::ShaderStages::FRAGMENT,
-        //                 ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-        //                 count: None,
-        //             },
-        //         ],
-        //         label: Some("texture_bind_group_layout"),
-        //     });
-
-        // Lighting
-        // Create light uniforms and setup buffer for them
-        let light_uniform = LightUniform {
-            position: [2.0, 2.0, 2.0],
-            _padding: 0,
-            color: [1.0, 1.0, 1.0],
-            _padding2: 0,
-        };
+        let depth_texture = texture::Texture::create_depth_texture(&device, &config, "depth_texture");
 
         // Setup camera uniform
         let mut camera_uniform = CameraUniform::new();
-        camera_uniform.update_view_proj(&camera);
-
-        // let render_pipeline = {
-        //     let shader = wgpu::ShaderModuleDescriptor {
-        //         label: Some("Normal Shader"),
-        //         source: wgpu::ShaderSource::Wgsl(include_str!("../shader.wgsl").into()),
-        //     };
-        //     create_render_pipeline(
-        //         &device,
-        //         &render_pipeline_layout,
-        //         config.format,
-        //         Some(texture::Texture::DEPTH_FORMAT),
-        //         &[model::ModelVertex::desc(), InstanceRaw::desc()],
-        //         shader,
-        //     )
-        // };
-
-        // let light_render_pipeline = {
-        //     let layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-        //         label: Some("Light Pipeline Layout"),
-        //         bind_group_layouts: &[&camera_bind_group_layout, &light_bind_group_layout],
-        //         push_constant_ranges: &[],
-        //     });
-        //     let shader = wgpu::ShaderModuleDescriptor {
-        //         label: Some("Light Shader"),
-        //         source: wgpu::ShaderSource::Wgsl(include_str!("../light.wgsl").into()),
-        //     };
-        //     create_render_pipeline(
-        //         &device,
-        //         &layout,
-        //         config.format,
-        //         Some(texture::Texture::DEPTH_FORMAT),
-        //         &[model::ModelVertex::desc()],
-        //         shader,
-        //     )
-        // };
-
-        // Create instance buffer
-        // We create a 2x2 grid of objects by doing 1 nested loop here
-        // And use the "displacement" matrix above to offset objects with a gap
-        const SPACE_BETWEEN: f32 = 3.0;
-        let instances = (0..NUM_INSTANCES_PER_ROW)
-            .flat_map(|z| {
-                (0..NUM_INSTANCES_PER_ROW).map(move |x| {
-                    let x = SPACE_BETWEEN * (x as f32 - NUM_INSTANCES_PER_ROW as f32 / 2.0);
-                    let z = SPACE_BETWEEN * (z as f32 - NUM_INSTANCES_PER_ROW as f32 / 2.0);
-
-                    let position = cgmath::Vector3 { x, y: 0.0, z };
-
-                    let rotation = if position.is_zero() {
-                        cgmath::Quaternion::from_axis_angle(
-                            cgmath::Vector3::unit_z(),
-                            cgmath::Deg(0.0),
-                        )
-                    } else {
-                        cgmath::Quaternion::from_axis_angle(position.normalize(), cgmath::Deg(45.0))
-                    };
-
-                    Instance { position, rotation }
-                })
-            })
-            .collect::<Vec<_>>();
-
-        // We condense the matrix properties into a flat array (aka "raw data")
-        // (which is how buffers work - so we can "stride" over chunks)
-        let instance_data = instances.iter().map(Instance::to_raw).collect::<Vec<_>>();
-        // Create the instance buffer with our data
-        let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Instance Buffer"),
-            contents: bytemuck::cast_slice(&instance_data),
-            usage: wgpu::BufferUsages::VERTEX,
-        });
+        camera_uniform.update(&camera);
 
         PhongPass {
             global_bind_group_layout,
             global_uniform_buffer,
             global_bind_group,
             local_bind_group_layout,
-            local_uniform_buffer,
             local_bind_groups: Default::default(),
             depth_texture,
-            // texture_bind_group_layout,
             render_pipeline,
             camera_uniform,
             light_uniform,
             light_buffer,
-            // light_bind_group,
-            // light_render_pipeline,
-            instances,
-            instance_buffer,
         }
     }
 }
@@ -452,22 +298,6 @@ impl Pass for PhongPass {
                 occlusion_query_set: None,
             });
 
-            // Setup our render pipeline with our config earlier in `new()`
-            render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
-
-            // // Setup lighting pipeline
-            // render_pass.set_pipeline(&self.light_render_pipeline);
-            // // Draw/calculate the lighting on models
-            // render_pass.draw_light_model(
-            //     &obj_model,
-            //     &self.camera_bind_group,
-            //     &self.light_bind_group,
-            // );
-
-            // Setup render pipeline
-            render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.set_bind_group(0, &self.global_bind_group, &[]);
-
             self.local_bind_groups.entry(0).or_insert_with(|| {
                 device.create_bind_group(&wgpu::BindGroupDescriptor {
                     label: Some("[Phong] Locals"),
@@ -475,10 +305,6 @@ impl Pass for PhongPass {
                     entries: &[
                         wgpu::BindGroupEntry {
                             binding: 0,
-                            resource: self.local_uniform_buffer.as_entire_binding(),
-                        },
-                        wgpu::BindGroupEntry {
-                            binding: 1,
                             resource: wgpu::BindingResource::TextureView(
                                 &node.model.materials[0].diffuse_texture.view,
                             ),
@@ -486,13 +312,19 @@ impl Pass for PhongPass {
                     ],
                 })
             });
+            queue.write_buffer(&self.global_uniform_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
 
-            // Draw the models
-            render_pass.draw_model_instanced(
-                &node.model,
-                0..*&self.instances.len() as u32,
-                &self.local_bind_groups[&0],
-            );
+            render_pass.set_vertex_buffer(1, node.instance_buffer().slice(..));
+
+            render_pass.set_pipeline(&self.render_pipeline);
+            render_pass.set_bind_group(0, &self.global_bind_group, &[]);
+            render_pass.set_bind_group(1, &self.local_bind_groups.get(&0).unwrap(), &[]);
+
+            for mesh in &node.model.meshes{
+                render_pass.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
+                render_pass.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
+                render_pass.draw_indexed(0..mesh.num_elements, 0, 0..*&node.instances_len() as u32);
+            }
         }
 
         queue.submit(Some(encoder.finish()));
