@@ -1,4 +1,4 @@
-use wgpu_try::run;
+use terre::run;
 
 fn main(){
     pollster::block_on(run());

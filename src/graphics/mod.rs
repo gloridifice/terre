@@ -1,6 +1,6 @@
 pub mod pass;
 
-use crate::{window::Window};
+use crate::{window::AppWindow};
 
 pub struct GraphicsContext {
     pub surface: wgpu::Surface,
@@ -10,7 +10,7 @@ pub struct GraphicsContext {
 }
 
 impl GraphicsContext {
-    pub async fn new(window: &Window) -> Self {
+    pub async fn new(window: &AppWindow) -> Self {
         let size = &window.window.inner_size();
 
         log::warn!("WGPU setup");

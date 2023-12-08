@@ -2,6 +2,13 @@ use std::any::{Any, TypeId};
 use std::collections::{HashMap};
 use std::rc::Rc;
 use uuid::Uuid;
+use crate::Runtime;
+
+pub trait System{
+    fn run(runtime: &mut Runtime);
+}
+
+
 
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]

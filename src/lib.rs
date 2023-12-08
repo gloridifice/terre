@@ -43,7 +43,7 @@ pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
 );
 
 
-pub struct State {
+pub struct Runtime {
     pub context: GraphicsContext,
     pub size: winit::dpi::PhysicalSize<u32>,
 
@@ -53,15 +53,47 @@ pub struct State {
     pub pass: PhongPass,
     pub nodes: Vec<Node>,
 }
-
-pub struct App;
+pub struct App{
+    updates: Vec<Box<dyn Fn(&mut Runtime)>>,
+    starts: Vec<Box<dyn Fn(&mut Runtime)>>,
+}
+pub enum Stage{
+    Start,
+    Update
+}
 impl App{
     pub fn new() -> Self{
-        App
+        App{
+            updates: vec![],
+            starts: vec![]
+        }
     }
 
-    pub fn run(){
+    pub fn add_system(mut self, stage: Stage, system: impl Fn(&mut Runtime) + 'static) -> Self{
+        match stage {
+            Stage::Start => { self.starts.push(Box::new(system))}
+            Stage::Update => { self.updates.push(Box::new(system))}
+        };
+        self
+    }
 
+    pub async fn run(mut self){
+        env_logger::init();
+
+        let window = window::AppWindow::new();
+        let mut runtime = Runtime::new(&window).await;
+        window.run(move |event| match event {
+            WindowEvents::Resized { width, height } => { runtime.resize(winit::dpi::PhysicalSize { width, height }) }
+            WindowEvents::Keyboard { state: element_state, virtual_keycode } => {
+                runtime.camera_controller.process_events(element_state, virtual_keycode);
+            }
+            WindowEvents::Cursor { position } => {
+                runtime.input.cursor_position = vec2(position.x, position.y)
+            }
+            WindowEvents::Draw => {
+                self.updates.iter().for_each(|it| it(&mut runtime));
+            }
+        })
     }
 }
 
@@ -88,8 +120,8 @@ async fn create_nodes(device: &Device, queue: &Queue) -> Vec<Node> {
     vec![Node::new(device, 0, model, instances)]
 }
 
-impl State {
-    async fn new(window: &window::Window) -> Self {
+impl Runtime {
+    async fn new(window: &window::AppWindow) -> Self {
         let size = window.window.inner_size();
 
         let context = GraphicsContext::new(window).await;
@@ -138,46 +170,32 @@ impl State {
         false
     }
 
-    fn update(&mut self) {
-        let offset = self.input.cursor_position - self.input.last_cursor_position;
-        self.camera.rotate(
-            &(
-                Quaternion::from_axis_angle(self.camera.up, Deg(-offset.x as f32) / 4f32)
-                // * Quaternion::from_axis_angle(self.camera.forward(), Deg(offset.y as f32))
-            )
-        );
 
-        self.camera_controller.update_camera(&mut self.camera);
-        self.pass.camera_uniform.update(&self.camera);
-
-        self.input.last_cursor_position = self.input.cursor_position;
-    }
-
-    fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
-        self.nodes.iter().for_each(|it| {
-            self.pass.draw(&self.context.surface, &self.context.device, &self.context.queue, it).expect("Draw failed!");
-        });
-
-        Ok(())
-    }
 }
 
-pub async fn run() {
-    env_logger::init();
 
-    let window = window::Window::new();
-    let mut state = State::new(&window).await;
-    window.run(move |event| match event {
-        WindowEvents::Resized { width, height } => { state.resize(winit::dpi::PhysicalSize { width, height }) }
-        WindowEvents::Keyboard { state: element_state, virtual_keycode } => {
-           state.camera_controller.process_events(element_state, virtual_keycode);
-        }
-        WindowEvents::Cursor { position } => {
-            state.input.cursor_position = vec2(position.x, position.y)
-        }
-        WindowEvents::Draw => {
-            state.update();
-            state.render().expect("TODO: render panic message");
-        }
-    })
+fn update(runtime: &mut Runtime) {
+    let offset = runtime.input.cursor_position - runtime.input.last_cursor_position;
+    runtime.camera.rotate(
+        &(
+            Quaternion::from_axis_angle(runtime.camera.up, Deg(-offset.x as f32) / 4f32)
+            // * Quaternion::from_axis_angle(runtime.camera.forward(), Deg(offset.y as f32))
+        )
+    );
+
+    runtime.camera_controller.update_camera(&mut runtime.camera);
+    runtime.pass.camera_uniform.update(&runtime.camera);
+
+    runtime.input.last_cursor_position = runtime.input.cursor_position;
+}
+fn render(runtime: &mut Runtime)  {
+    runtime.nodes.iter().for_each(|it| {
+        runtime.pass.draw(&runtime.context.surface, &runtime.context.device, &runtime.context.queue, it).expect("Draw failed!");
+    });
+}
+pub async fn run() {
+    App::new()
+        .add_system(Stage::Update, render)
+        .add_system(Stage::Update, update)
+        .run().await;
 }

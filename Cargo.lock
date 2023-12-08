@@ -1739,6 +1739,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "terre"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bytemuck",
+ "cgmath",
+ "derive_builder",
+ "env_logger",
+ "fs_extra",
+ "glob",
+ "image",
+ "log",
+ "noise",
+ "pollster",
+ "tobj",
+ "uuid",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.50"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2121,27 +2142,6 @@ dependencies = [
  "web-sys",
  "wgpu-types",
  "winapi",
-]
-
-[[package]]
-name = "wgpu-try"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bytemuck",
- "cgmath",
- "derive_builder",
- "env_logger",
- "fs_extra",
- "glob",
- "image",
- "log",
- "noise",
- "pollster",
- "tobj",
- "uuid",
- "wgpu",
- "winit",
 ]
 
 [[package]]

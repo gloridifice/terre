@@ -4,12 +4,12 @@ use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEve
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window;
 
-pub struct Window {
+pub struct AppWindow {
     pub event_loop: EventLoop<()>,
     pub window: window::Window,
 }
 
-impl Window {
+impl AppWindow {
     pub fn new() -> Self {
         let event_loop = EventLoop::new();
         let window = window::WindowBuilder::new().with_title("Terre").build(&event_loop).unwrap();
