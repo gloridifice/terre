@@ -1,14 +1,9 @@
 use std::{collections::HashMap, mem};
 use bytemuck::{Pod, Zeroable};
 
-use wgpu::{util::DeviceExt, BindGroupLayout, Device, Queue, Surface, StoreOp};
+use wgpu::{util::DeviceExt, BindGroupLayout, Device, Queue, Surface, StoreOp, CommandEncoder, TextureView};
 
-use crate::{
-    camera::{Camera, CameraUniform},
-    instance::{InstanceRaw},
-    model::{self, Vertex},
-    texture,
-};
+use crate::{camera::{Camera, CameraUniform}, instance::{InstanceRaw}, model::{self, Vertex}, render, texture};
 use crate::node::Node;
 
 use super::Pass;
@@ -256,17 +251,10 @@ impl Pass for PhongPass {
         surface: &Surface,
         device: &Device,
         queue: &Queue,
+        encoder: &mut CommandEncoder,
+        view: &TextureView,
         node: &Node,
     ) -> Result<(), wgpu::SurfaceError> {
-        let output = surface.get_current_texture()?;
-        let view = output
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
-
-        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-            label: Some("Render Encoder"),
-        });
-
         {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
@@ -325,10 +313,9 @@ impl Pass for PhongPass {
                 render_pass.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
                 render_pass.draw_indexed(0..mesh.num_elements, 0, 0..*&node.instances_len() as u32);
             }
+
         }
 
-        queue.submit(Some(encoder.finish()));
-        output.present();
 
         Ok(())
     }

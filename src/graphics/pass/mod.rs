@@ -1,4 +1,4 @@
-use wgpu::{Device, Queue, Surface};
+use wgpu::{CommandEncoder, Device, Queue, Surface, TextureView};
 
 use crate::node::Node;
 
@@ -10,6 +10,8 @@ pub trait Pass {
         surface: &Surface,
         device: &Device,
         queue: &Queue,
+        encoder: &mut CommandEncoder,
+        view: &TextureView,
         node: &Node,
     ) -> Result<(), wgpu::SurfaceError>;
 }

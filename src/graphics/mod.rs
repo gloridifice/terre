@@ -1,6 +1,6 @@
 pub mod pass;
 
-use crate::{window::AppWindow};
+use winit::window::Window;
 
 pub struct GraphicsContext {
     pub surface: wgpu::Surface,
@@ -10,8 +10,8 @@ pub struct GraphicsContext {
 }
 
 impl GraphicsContext {
-    pub async fn new(window: &AppWindow) -> Self {
-        let size = &window.window.inner_size();
+    pub async fn new(window: &Window) -> Self {
+        let size = &window.inner_size();
 
         log::warn!("WGPU setup");
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -23,7 +23,7 @@ impl GraphicsContext {
         //
         // The surface needs to live as long as the window that created it.
         // State owns the window so this should be safe.
-        let surface = unsafe { instance.create_surface(&window.window) }.unwrap();
+        let surface = unsafe { instance.create_surface(&window) }.unwrap();
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {

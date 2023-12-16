@@ -17,65 +17,7 @@ impl AppWindow {
         Self { event_loop, window }
     }
 
-    pub fn run(self, mut callback: impl 'static + FnMut(WindowEvents) -> ()) {
-        self.event_loop.run(move |event, _, control_flow| {
-            match event {
-                Event::WindowEvent {
-                    ref event,
-                    window_id,
-                } if window_id == self.window.id() => {
-                    match event {
-                        WindowEvent::KeyboardInput {
-                            input: KeyboardInput{
-                                state,
-                                virtual_keycode,
-                                ..
-                            },
-                            ..
-                        } => callback(WindowEvents::Keyboard {state, virtual_keycode}),
-                        WindowEvent::CursorMoved {
-                            position,
-                            ..
-                        } => {
-                            callback(WindowEvents::Cursor {position})
-                        },
-                        WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-                        WindowEvent::Resized(physical_size) => callback(WindowEvents::Resized {
-                            width: physical_size.width,
-                            height: physical_size.height,
-                        }),
-                        WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                            // new_inner_size is &&mut so w have to dereference it twice
-                            callback(WindowEvents::Resized {
-                                width: new_inner_size.width,
-                                height: new_inner_size.height,
-                            })
-                        }
-                        _ => {}
-                    }
-                }
-                Event::RedrawRequested(window_id) if window_id == self.window.id() => {
-                    callback(WindowEvents::Draw);
-                    // match state.render() {
-                    //     Ok(_) => {}
-                    //     // Reconfigure the surface if it's lost or outdated
-                    //     Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
-                    //         // state.resize(state.size)
-                    //     }
-                    //     // The system is out of memory, we should probably quit
-                    //     Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
-
-                    //     Err(wgpu::SurfaceError::Timeout) => log::warn!("Surface timeout"),
-                    // }
-                }
-                Event::RedrawEventsCleared => {
-                    // RedrawRequested will only trigger once, unless we manually
-                    // request it.
-                    self.window.request_redraw();
-                }
-                _ => {}
-            }
-        });
+    pub fn run(event_loop: &EventLoop<()>, window: &mut window::Window, mut callback: impl 'static + FnMut(WindowEvents) -> ()) {
     }
 }
 

@@ -5,7 +5,13 @@ use uuid::Uuid;
 use crate::Runtime;
 
 pub trait System{
-    fn run(runtime: &mut Runtime);
+    fn run(&self, runtime: &mut Runtime);
+}
+
+impl<F> System for F where F: Fn(&mut Runtime) -> (){
+    fn run(&self, runtime: &mut Runtime) {
+        self(runtime)
+    }
 }
 
 
