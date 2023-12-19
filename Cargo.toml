@@ -34,6 +34,9 @@ egui-wgpu = {version =  "0.24.1", features = ["winit"] }
 egui-winit = "0.24.1"
 egui_demo_lib = "0.24.1"
 
+# ecs --
+hecs = { version = "0.10.4", features = ["hecs-macros", "macros"] }
+
 
 [build-dependencies]
 anyhow = "1.0"

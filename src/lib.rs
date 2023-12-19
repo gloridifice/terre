@@ -1,5 +1,6 @@
 use cgmath::prelude::*;
 use cgmath::{vec2, Deg, Quaternion, Vector3};
+use egui::WidgetType::SelectableLabel;
 use egui_wgpu::renderer::ScreenDescriptor;
 use egui_winit::pixels_per_point;
 use instance::Instance;
@@ -59,6 +60,7 @@ pub struct Runtime {
 pub struct App {
     updates: Vec<Box<dyn System>>,
     starts: Vec<Box<dyn System>>,
+    key_board_handles: Vec<Box<dyn Fn(&mut Runtime, &KeyboardInput)>>,
 }
 pub enum Stage {
     Start,
@@ -69,9 +71,14 @@ impl App {
         App {
             updates: vec![],
             starts: vec![],
+            key_board_handles: vec![],
         }
     }
 
+    pub fn add_key_handle(mut self, handle: impl Fn(&mut Runtime, &KeyboardInput) + 'static) -> Self{
+        self.key_board_handles.push(Box::new(handle));
+        self
+    }
     pub fn add_system(mut self, stage: Stage, system: impl Fn(&mut Runtime) + 'static) -> Self {
         match stage {
             Stage::Start => self.starts.push(Box::new(system)),
@@ -101,14 +108,13 @@ impl App {
                     runtime.egui_renderer.handle_event(event);
                     match event {
                         WindowEvent::KeyboardInput {
-                            input:
-                                KeyboardInput {
-                                    state,
-                                    virtual_keycode,
-                                    ..
-                                },
+                            input,
                             ..
-                        } => {}
+                        } => {
+                            self.key_board_handles.iter().for_each(|it| {
+                                it(&mut runtime, input)
+                            });
+                        }
                         WindowEvent::CursorMoved { position, .. } => {
                             runtime.input.cursor_position = vec2(position.x, position.y);
                         }
@@ -211,9 +217,6 @@ impl Runtime {
             );
         }
     }
-    fn input(&mut self, event: &WindowEvent) -> bool {
-        false
-    }
 }
 
 fn update(runtime: &mut Runtime) {
@@ -271,9 +274,7 @@ fn render(runtime: &mut Runtime) {
                 .default_open(false)
                 .show(&ui, |mut ui| {
                     ui.label("Window!");
-                    ui.label("Window!");
-                    ui.label("Window!");
-                    ui.label("Window!");
+                    ui.add(egui::Slider::new(&mut runtime.camera.fovy, 10f32..=120f32).text("fovy"))
                 });
         },
     );
@@ -281,10 +282,14 @@ fn render(runtime: &mut Runtime) {
     queue.submit(Some(encoder.finish()));
     output.present();
 }
+fn handle_camera_key_controller(runtime:&mut Runtime, input: &KeyboardInput){
+    runtime.camera_controller.process_events(&input.state, &input.virtual_keycode);
+}
 pub async fn run() {
     App::new()
         .add_system(Stage::Update, update)
         .add_system(Stage::Update, render)
+        .add_key_handle(handle_camera_key_controller)
         .run()
         .await;
 }
