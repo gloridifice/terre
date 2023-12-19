@@ -1,7 +1,6 @@
 use std::env;
 use std::io::{BufReader, Cursor};
 use anyhow::*;
-use bytemuck::bytes_of;
 use wgpu::{Device, Queue};
 use wgpu::util::DeviceExt;
 use crate::{model, texture};
