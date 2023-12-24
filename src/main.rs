@@ -1,5 +1,6 @@
-use terre::run;
+use terre_core::app::App;
 
 fn main(){
-    pollster::block_on(run());
+    App::new()
+        .run();
 }

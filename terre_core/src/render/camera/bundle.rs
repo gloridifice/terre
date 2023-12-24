@@ -1,5 +1,5 @@
 use wgpu::util::DeviceExt;
-use crate::camera::{Camera, CameraController, CameraUniform};
+use super::*;
 
 pub struct CameraBundle {
     pub camera: Camera,

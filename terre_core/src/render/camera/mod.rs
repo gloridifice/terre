@@ -1,9 +1,10 @@
+pub mod bundle;
+
 use std::ops::Add;
 use cgmath::{InnerSpace, Quaternion, SquareMatrix, Vector3, Zero};
 use bytemuck::Zeroable;
 use winit::event::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
-use crate::ecs::resource::Res;
-use crate::OPENGL_TO_WGPU_MATRIX;
+use crate::ecs::resource::Resource;
 
 pub struct Camera {
     pub eye: cgmath::Point3<f32>,
@@ -14,8 +15,8 @@ pub struct Camera {
     pub znear: f32,
     pub zfar: f32,
 }
-impl Res for Camera{}
-impl Res for CameraController{}
+impl Resource for Camera{}
+impl Resource for CameraController{}
 impl Camera {
     pub fn new(aspect: f32) -> Self {
         Self {
@@ -69,7 +70,7 @@ impl CameraUniform {
     }
 
     pub fn update(&mut self, camera: &Camera) {
-        self.view_proj = (OPENGL_TO_WGPU_MATRIX * camera.build_view_projection_matrix()).into();
+        self.view_proj = (crate::render::OPENGL_TO_WGPU_MATRIX * camera.build_view_projection_matrix()).into();
         self.view_position = [camera.eye.x, camera.eye.y, camera.eye.y, 1f32];
     }
 }

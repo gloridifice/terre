@@ -3,8 +3,8 @@ use std::io::{BufReader, Cursor};
 use anyhow::*;
 use wgpu::{Device, Queue};
 use wgpu::util::DeviceExt;
-use crate::{model, texture};
-use crate::model::Material;
+use crate::render::{model, texture};
+use crate::render::model::Material;
 
 
 pub async fn load_string(file_name: &str) -> Result<String> {
@@ -62,23 +62,23 @@ pub async fn load_model(
 
     let meshes =
         models.into_iter().map(|m| {
-        let vertices = (0..m.mesh.positions.len() / 3)
-            .map(|i| model::ModelVertex{
-                position: [
-                    m.mesh.positions[i * 3],
-                    m.mesh.positions[i * 3 + 1],
-                    m.mesh.positions[i * 3 + 2],
-                ],
-                tex_coords: [m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]],
-                normal: [
-                    m.mesh.normals[i * 3],
-                    m.mesh.normals[i * 3 + 1],
-                    m.mesh.normals[i * 3 + 2],
-                ],
-            }).collect::<Vec<_>>();
-            
+            let vertices = (0..m.mesh.positions.len() / 3)
+                .map(|i| model::ModelVertex{
+                    position: [
+                        m.mesh.positions[i * 3],
+                        m.mesh.positions[i * 3 + 1],
+                        m.mesh.positions[i * 3 + 2],
+                    ],
+                    tex_coords: [m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]],
+                    normal: [
+                        m.mesh.normals[i * 3],
+                        m.mesh.normals[i * 3 + 1],
+                        m.mesh.normals[i * 3 + 2],
+                    ],
+                }).collect::<Vec<_>>();
+
             let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor{
-               label: Some(&format!("{:?} Vertex Buffer", file_name)),
+                label: Some(&format!("{:?} Vertex Buffer", file_name)),
                 contents: bytemuck::cast_slice(&vertices),
                 usage: wgpu::BufferUsages::VERTEX,
             });
@@ -95,7 +95,7 @@ pub async fn load_model(
                 num_elements: m.mesh.indices.len() as u32,
                 material: m.mesh.material_id.unwrap_or(0),
             }
-    }).collect::<Vec<_>>();
-    
+        }).collect::<Vec<_>>();
+
     Ok(model::Model{ meshes, materials})
 }
