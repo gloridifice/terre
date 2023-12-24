@@ -21,3 +21,7 @@ impl <F> KeyHandleSystem for F where F: Fn(&mut Runtime, &KeyboardInput) -> () {
         self(runtime, input)
     }
 }
+
+pub enum Stage{
+    Start, PreUpdate, Update, PostUpdate
+}

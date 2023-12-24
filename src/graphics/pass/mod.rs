@@ -7,7 +7,6 @@ pub mod phong;
 pub trait Pass {
     fn draw(
         &mut self,
-        surface: &Surface,
         device: &Device,
         queue: &Queue,
         encoder: &mut CommandEncoder,

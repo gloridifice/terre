@@ -2,6 +2,7 @@ use std::ops::Add;
 use cgmath::{InnerSpace, Quaternion, SquareMatrix, Vector3, Zero};
 use bytemuck::Zeroable;
 use winit::event::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
+use crate::ecs::resource::Res;
 use crate::OPENGL_TO_WGPU_MATRIX;
 
 pub struct Camera {
@@ -13,7 +14,8 @@ pub struct Camera {
     pub znear: f32,
     pub zfar: f32,
 }
-
+impl Res for Camera{}
+impl Res for CameraController{}
 impl Camera {
     pub fn new(aspect: f32) -> Self {
         Self {

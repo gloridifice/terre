@@ -4,11 +4,11 @@ use egui_wgpu::renderer::ScreenDescriptor;
 use egui_winit::pixels_per_point;
 use instance::Instance;
 use noise::{Fbm, MultiFractal, NoiseFn, Perlin};
-use wgpu::util::DeviceExt;
 use wgpu::{Device, Queue};
 use winit::event::*;
 use app::{App, Runtime};
 use ecs::Stage;
+use crate::camera::{Camera, CameraController};
 
 pub mod camera;
 pub mod ecs;
@@ -22,11 +22,12 @@ mod resources;
 mod texture;
 pub mod window;
 pub mod app;
+pub mod component;
+pub mod asset;
 
-use crate::ecs::{KeyHandleSystem, System};
 use crate::graphics::pass::Pass;
+use crate::graphics::pass::phong::PhongPass;
 use crate::node::Node;
-use model::{DrawModel, Vertex};
 
 #[rustfmt::skip]
 pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
@@ -45,7 +46,7 @@ async fn create_nodes(device: &Device, queue: &Queue) -> Vec<Node> {
     let fbm = Fbm::<Perlin>::new(0).set_frequency(0.01f64);
 
     let mut instances: Vec<Instance> = vec![];
-    let rotation = cgmath::Quaternion::from_axis_angle(Vector3::unit_z(), cgmath::Deg(0.0));
+    let rotation = Quaternion::from_axis_angle(Vector3::unit_z(), cgmath::Deg(0.0));
     for x in 0..128 {
         for z in 0..128 {
             let y = (fbm.get([x as f64, z as f64]) * 10.0).round() as f32;
@@ -58,15 +59,19 @@ async fn create_nodes(device: &Device, queue: &Queue) -> Vec<Node> {
 }
 fn update(runtime: &mut Runtime) {
     let offset = runtime.input.cursor_position - runtime.input.last_cursor_position;
-    runtime.camera.rotate(
+    
+    let camera = runtime.res_manager.get_res_mut::<Camera>().unwrap();
+    let camera_controller = runtime.res_manager.get_res_mut::<CameraController>().unwrap();
+    let pass = runtime.res_manager.get_res_mut::<PhongPass>().unwrap();
+    camera.rotate(
         &(
             Quaternion::from_axis_angle(runtime.camera.up, Deg(-offset.x as f32) / 4f32)
             // * Quaternion::from_axis_angle(runtime.camera.forward(), Deg(offset.y as f32))
         ),
     );
 
-    runtime.camera_controller.update_camera(&mut runtime.camera);
-    runtime.pass.camera_uniform.update(&runtime.camera);
+    camera_controller.update_camera(&mut camera);
+    pass.camera_uniform.update(&runtime.camera);
 
     runtime.input.last_cursor_position = runtime.input.cursor_position;
 }

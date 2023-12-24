@@ -248,7 +248,6 @@ impl PhongPass {
 impl Pass for PhongPass {
     fn draw(
         &mut self,
-        surface: &Surface,
         device: &Device,
         queue: &Queue,
         encoder: &mut CommandEncoder,

@@ -4,12 +4,14 @@ use egui_winit::State;
 use wgpu::{CommandEncoder, Device, Queue, StoreOp, Surface, TextureFormat, TextureView};
 use winit::event::WindowEvent;
 use winit::window::Window;
+use crate::ecs::resource::Res;
 
 pub struct EguiRenderer {
     pub context: egui::Context,
     state: State,
     renderer: Renderer,
 }
+impl Res for EguiRenderer{}
 
 impl EguiRenderer {
     pub fn new(

@@ -2148,6 +2148,7 @@ dependencies = [
  "bytemuck",
  "cgmath",
  "derive_builder",
+ "downcast-rs",
  "egui",
  "egui-wgpu",
  "egui-winit",
@@ -2159,6 +2160,27 @@ dependencies = [
  "image",
  "log",
  "noise",
+ "pollster",
+ "tobj",
+ "uuid",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
+name = "terre_core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bytemuck",
+ "cgmath",
+ "derive_builder",
+ "downcast-rs",
+ "env_logger",
+ "fs_extra",
+ "glob",
+ "hecs",
+ "log",
  "pollster",
  "tobj",
  "uuid",

@@ -5,6 +5,7 @@ use cgmath::vec2;
 use wgpu::TextureFormat::Bgra8UnormSrgb;
 use crate::camera::{Camera, CameraController};
 use crate::ecs::{KeyHandleSystem, Stage, System};
+use crate::ecs::resource::ResManager;
 use crate::egui_renderer::EguiRenderer;
 use crate::graphics::GraphicsContext;
 use crate::graphics::pass::phong::{PhongConfig, PhongPass};
@@ -13,74 +14,55 @@ use crate::node::Node;
 use crate::texture;
 
 pub struct Runtime {
-    pub context: GraphicsContext,
+    // pub context: GraphicsContext,
     pub size: winit::dpi::PhysicalSize<u32>,
     pub world: hecs::World,
+    pub res_manager: ResManager,
 
-    pub camera: Camera,
-    pub camera_controller: CameraController,
     pub input: CursorInput,
-    pub pass: PhongPass,
-    pub nodes: Vec<Node>,
+    // pub nodes: Vec<Node>,
     pub window: Window,
-    pub egui_renderer: EguiRenderer,
+    // pub egui_renderer: EguiRenderer,
 }
 
 impl Runtime {
     async fn new(window: Window) -> Self {
         let size = window.inner_size();
 
-        let context = GraphicsContext::new(&window).await;
-        let device = &context.device;
-        let config = &context.config;
-        let queue = &context.queue;
-
-        let camera = Camera::new(size.width as f32 / size.height as f32);
-        let camera_controller = CameraController::new(0.5f32);
-
-        let nodes = crate::create_nodes(device, queue).await;
-        let phong_pass = PhongPass::new(
-            &PhongConfig {
-                max_lights: 0,
-                ambient: [1, 1, 1, 1],
-            },
-            device,
-            queue,
-            config,
-            &camera,
-        );
+        // let nodes = crate::create_nodes(device, queue).await;
         let input = CursorInput::new();
-        let egui_renderer = EguiRenderer::new(device, Bgra8UnormSrgb, None, 1, &window);
 
         let world = hecs::World::new();
+        let res_manager = ResManager::new();
 
         Self {
-            context,
             size,
-            camera,
-            camera_controller,
-            pass: phong_pass,
+            res_manager,
             input,
-            nodes,
+            // nodes,
             window,
-            egui_renderer,
-            world
+            world,
         }
     }
 
     fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
         if new_size.width > 0 && new_size.height > 0 {
-            self.camera.aspect =
-                self.context.config.width as f32 / self.context.config.height as f32;
+            let camera = self.res_manager.get_res_mut::<Camera>().unwrap();
+            let context = self.res_manager.get_res_mut::<GraphicsContext>().unwrap();
+            let pass = self.res_manager.get_res_mut::<PhongPass>().unwrap();
+
+            camera.aspect =
+                context.config.width as f32 / context.config.height as f32;
+
             self.size = new_size;
-            self.context.config.width = new_size.width;
-            self.context.config.height = new_size.height;
-            self.context
+            context.config.width = new_size.width;
+            context.config.height = new_size.height;
+            context
                 .surface
-                .configure(&self.context.device, &self.context.config);
-            self.pass.depth_texture = texture::Texture::create_depth_texture(
-                &self.context.device,
-                &self.context.config,
+                .configure(&context.device, &context.config);
+            pass.depth_texture = texture::Texture::create_depth_texture(
+                &context.device,
+                &context.config,
                 "depth_texture",
             );
         }
@@ -102,7 +84,7 @@ impl App {
         }
     }
 
-    pub fn add_key_handle(mut self, handle: impl Fn(&mut Runtime, &KeyboardInput) + 'static) -> Self{
+    pub fn add_key_handle(mut self, handle: impl Fn(&mut Runtime, &KeyboardInput) + 'static) -> Self {
         self.key_board_handles.push(Box::new(handle));
         self
     }
@@ -113,9 +95,8 @@ impl App {
         };
         self
     }
-    pub fn add_plugin(mut self, plugin: impl Plugin + 'static) -> Self{
-        plugin.run(&mut self);
-        self
+    pub fn add_plugin(mut self, plugin: impl Plugin + 'static) -> Self {
+        plugin.run(self)
     }
     pub async fn run(mut self) {
         env_logger::init();
@@ -127,7 +108,10 @@ impl App {
                 .build(&event_loop)
                 .unwrap(),
         )
-        .await;
+            .await;
+
+        //Start System
+        self.starts.iter().for_each(|it| it.run(&mut runtime));
 
         event_loop.run(move |event, _, control_flow| {
             match event {
@@ -135,7 +119,8 @@ impl App {
                     ref event,
                     window_id,
                 } if window_id == runtime.window.id() => {
-                    runtime.egui_renderer.handle_event(event);
+                    let egui_renderer = runtime.res_manager.get_res_mut::<EguiRenderer>();
+                    egui_renderer.unwrap().handle_event(event);
                     match event {
                         WindowEvent::KeyboardInput {
                             input,
@@ -171,6 +156,6 @@ impl App {
     }
 }
 
-pub trait Plugin{
-    fn run(&self, app: &mut App);
+pub trait Plugin {
+    fn run(&self, app: App) -> App;
 }

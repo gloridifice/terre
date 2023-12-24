@@ -1,6 +1,50 @@
 pub mod pass;
 
+use pollster::block_on;
+use wgpu::TextureFormat::Bgra8UnormSrgb;
 use winit::window::Window;
+use crate::app::{App, Plugin, Runtime};
+use crate::camera::{Camera, CameraController};
+use crate::ecs::resource::Res;
+use crate::ecs::Stage;
+use crate::egui_renderer::EguiRenderer;
+use crate::graphics::pass::phong::{PhongConfig, PhongPass};
+
+pub struct GraphicsPlugin;
+
+impl Plugin for GraphicsPlugin{
+    fn run(&self, app: App) -> App{
+        app.add_system(Stage::Start, start_graphics)
+    }
+}
+
+fn start_graphics(runtime: &mut Runtime){
+    let camera = Camera::new(runtime.size.width as f32 / runtime.size.height as f32);
+    let camera_controller = CameraController::new(0.5f32);
+    let context = GraphicsContext::new(&runtime.window);
+    let context = block_on(context);
+
+    let phong_pass = PhongPass::new(
+        &PhongConfig {
+            max_lights: 0,
+            ambient: [1, 1, 1, 1],
+        },
+        &context.device,
+        &context.queue,
+        &context.config,
+        &camera,
+    );
+    let egui_renderer = EguiRenderer::new(&context.device, Bgra8UnormSrgb, None, 1, &runtime.window);
+
+    runtime.res_manager.push_res(camera);
+    runtime.res_manager.push_res(camera_controller);
+    runtime.res_manager.push_res(context);
+    runtime.res_manager.push_res(phong_pass);
+    runtime.res_manager.push_res(egui_renderer);
+}
+
+impl Res for GraphicsContext{}
+impl Res for PhongPass{}
 
 pub struct GraphicsContext {
     pub surface: wgpu::Surface,
@@ -75,3 +119,4 @@ impl GraphicsContext {
         }
     }
 }
+
