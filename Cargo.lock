@@ -2191,27 +2191,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "terre_core"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bytemuck",
- "cgmath",
- "derive_builder",
- "downcast-rs",
- "env_logger",
- "fs_extra",
- "glob",
- "hecs",
- "log",
- "pollster",
- "tobj",
- "uuid",
- "wgpu",
- "winit",
-]
-
-[[package]]
 name = "thiserror"
 version = "1.0.50"
 source = "registry+https://github.com/rust-lang/crates.io-index"
