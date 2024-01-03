@@ -4,6 +4,11 @@ use crate::render::texture;
 
 pub trait Vertex{
     fn desc() -> wgpu::VertexBufferLayout<'static>;
+    // fn get_position(&self) -> Option<&[f32; 3]> ;
+    // fn get_tex_coords(&self) -> Option<&[f32; 2]>;
+    // fn get_normal(&self) -> Option<&[f32; 3]>;
+    // fn get_color(&self) -> Option<&[f32; 3]>;
+    // fn get_normal_tex_coords(&self) -> Option<&[f32; 3]>;
 }
 
 #[repr(C)]
@@ -61,22 +66,3 @@ pub struct Model{
     pub meshes: Vec<Mesh>,
     pub materials: Vec<Material>,
 }
-
-pub trait DrawModel<'a>{
-    fn draw_mesh(&mut self, mesh: &'a Mesh, material: &'a Material, camera_bind_group: &'a wgpu::BindGroup);
-    fn draw_mesh_instanced(
-        &mut self,
-        mesh: &'a Mesh,
-        material: &'a Material,
-        instances: Range<u32>,
-    );
-
-    fn draw_model(&mut self, model: &'a Model, camera_bind_group: &'a wgpu::BindGroup);
-    fn draw_model_instanced(
-        &mut self,
-        model: &'a Model,
-        instances: Range<u32>,
-    );
-}
-
-

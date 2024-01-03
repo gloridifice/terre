@@ -1,7 +1,7 @@
 use hecs::{Query, QueryMut, World};
 use winit::event::KeyboardInput;
 use std::marker::PhantomData;
-use crate::app::State;
+use crate::render::RenderState;
 use crate::ecs::resource::ResManager;
 
 pub trait System {
@@ -9,11 +9,11 @@ pub trait System {
 }
 
 pub trait KeyHandleSystem {
-    fn run(&self, runtime: &mut State, input: &KeyboardInput);
+    fn run(&self, runtime: &mut RenderState, input: &KeyboardInput);
 }
 
-impl<F> KeyHandleSystem for F where F: Fn(&mut State, &KeyboardInput) -> () {
-    fn run(&self, runtime: &mut State, input: &KeyboardInput) {
+impl<F> KeyHandleSystem for F where F: Fn(&mut RenderState, &KeyboardInput) -> () {
+    fn run(&self, runtime: &mut RenderState, input: &KeyboardInput) {
         self(runtime, input)
     }
 }
@@ -83,7 +83,6 @@ impl<Func: 'static, P1> SystemParamFunction<fn(P1,) -> ()> for Func
         self(param.0)
     }
 }
-
 
 impl<F, Marker> IntoSystem<Marker> for F
     where

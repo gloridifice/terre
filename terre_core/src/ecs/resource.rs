@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use anyhow::Error;
 use downcast_rs::{Downcast, impl_downcast};
+use terre_core_macros::Resource;
 
 pub struct Res<'a, T> {
     value: &'a T,

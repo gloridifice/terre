@@ -1,35 +1,11 @@
-use winit::window::{Window, WindowBuilder};
+use winit::window::WindowBuilder;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use pollster::block_on;
 use crate::ecs::resource::ResManager;
-use crate::ecs::system::{IntoSystem};
-use crate::render::pass::PassQueue;
-use crate::render::RenderContext;
+use crate::ecs::system::IntoSystem;
+use crate::render::RenderState;
 use crate::schedule::{GameSchedule, Stage};
-
-pub struct State {
-    pub size: winit::dpi::PhysicalSize<u32>,
-    pub render_context: RenderContext,
-    pub pass_queue: PassQueue,
-    pub window: Window,
-}
-
-impl State {
-    async fn new(window: Window) -> Self {
-        let size = window.inner_size();
-
-        let render_context = RenderContext::new(&window).await;
-        let pass_queue = PassQueue::new();
-
-        Self {
-            size,
-            render_context,
-            window,
-            pass_queue,
-        }
-    }
-}
 
 pub struct App {
     world: hecs::World,
@@ -59,7 +35,7 @@ impl App {
 
         let event_loop = EventLoop::new();
 
-        let mut state = block_on(State::new(
+        let mut state = block_on(RenderState::new(
             WindowBuilder::new()
                 .with_title("Terre")
                 .build(&event_loop)

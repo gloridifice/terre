@@ -1,10 +1,7 @@
 use bytemuck::Zeroable;
 use cgmath::{Matrix3, Matrix4, Quaternion, Vector3};
-use hecs::{ComponentRefShared, Entity};
-use crate::app::{App, Plugin, State};
-use crate::schedule::Stage::Update;
-
-
+use hecs::Entity;
+use crate::app::{App, Plugin};
 
 pub struct TransformPlugin;
 impl Plugin for TransformPlugin{

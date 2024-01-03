@@ -1,6 +1,6 @@
 use terre_core::app::App;
 
-fn main(){
+fn main() {
     App::new()
         .run();
 }

@@ -13,6 +13,33 @@ pub mod work;
 pub mod material;
 pub mod camera;
 
+
+
+pub struct RenderState {
+    pub size: winit::dpi::PhysicalSize<u32>,
+    pub render_context: RenderContext,
+    pub pass_queue: PassQueue,
+    pub window: Window,
+}
+
+impl RenderState {
+    pub async fn new(window: Window) -> Self {
+        let size = window.inner_size();
+
+        let render_context = RenderContext::new(&window).await;
+        let pass_queue = PassQueue::new();
+
+        Self {
+            size,
+            render_context,
+            window,
+            pass_queue,
+        }
+    }
+}
+
+
+
 /// Package of render target.
 /// Including *view, format, size*.
 pub struct Target {
@@ -182,3 +209,4 @@ pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
     0.0, 0.0, 0.5, 0.5,
     0.0, 0.0, 0.0, 1.0,
 );
+

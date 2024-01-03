@@ -7,38 +7,21 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ff80094d-8888-441e-90bb-0b6ff7823ece" name="Changes" comment="feat: add core workspace">
-      <change afterPath="$PROJECT_DIR$/terre_core/src/asset/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terre_core/src/ecs/system.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terre_core/src/input.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terre_core/src/render/camera/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terre_core/src/render/material.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terre_core/src/render/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terre_core/src/render/model.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terre_core/src/render/pass/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terre_core/src/render/work.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/terre_core/src/schedule.rs" afterDir="false" />
+    <list default="true" id="ff80094d-8888-441e-90bb-0b6ff7823ece" name="Changes" comment="fix: fix Cargo.lock bug">
+      <change afterPath="$PROJECT_DIR$/terre_core/macros/Cargo.toml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/terre_core/macros/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/terre.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/terre.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/app.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/asset/model_loader.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/asset/model_loader.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/component/mod.rs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/component/model_renderer.rs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/component/transform.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/transform.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ecs/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/ecs/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ecs/resource.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/ecs/resource.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/graphics/mod.rs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/graphics/pass/mod.rs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/graphics/pass/phong.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/render/pass/phong.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/graphics/pass/shader.wgsl" beforeDir="false" afterPath="$PROJECT_DIR$/res/shader.wgsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/resources.rs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/texture.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/render/texture.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/world.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/render/camera/bundle.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/terre_core/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/terre_core/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terre_core/src/app.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/app.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terre_core/src/ecs/resource.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/ecs/resource.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terre_core/src/ecs/system.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/ecs/system.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terre_core/src/render/camera/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/render/camera/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terre_core/src/render/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/render/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terre_core/src/render/model.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/render/model.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terre_core/src/transform.rs" beforeDir="false" afterPath="$PROJECT_DIR$/terre_core/src/transform.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,34 +61,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Cargo.Run terre.executor": "Run",
-    "Cargo.Test app::test::test_start_schedule.executor": "Run",
-    "Cargo.Test ecs::resource::test::test_res_manager_get_mut.executor": "Run",
-    "Cargo.Test ecs::resource::test::test_res_manager_push_and_get.executor": "Run",
-    "Cargo.Test ecs::test::test_app_add_system.executor": "Run",
-    "Cargo.Test render::test::test_render.executor": "Run",
-    "Cargo.Test schedule::test::test_app_add_system.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "migrate__to__hecs",
-    "last_opened_file_path": "/Users/yfan/MyProjects/Rust/terre/terre_core/src/render/camera",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
-    "org.rust.disableDetachedFileInspection/Users/yfan/MyProjects/Rust/terre/src/ecs/resource.rs": "true",
-    "org.rust.disableDetachedFileInspection/Users/yfan/MyProjects/Rust/terre/terre_core/src/lib.rs": "true",
-    "org.rust.disableDetachedFileInspection/Users/yfan/MyProjects/Rust/terre/terre_core/src/main.rs": "true",
-    "org.rust.disableDetachedFileInspection/Users/yfan/MyProjects/Rust/terre/terre_core/src/render/pass/mod.rs": "true",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Cargo.Run terre.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test app::test::test_start_schedule.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test ecs::resource::test::test_res_manager_get_mut.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test ecs::resource::test::test_res_manager_push_and_get.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test ecs::test::test_app_add_system.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test render::test::test_render.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test schedule::test::test_app_add_system.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;migrate__to__hecs&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/yfan/MyProjects/Rust/terre/terre_core/src/render/camera&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/yfan/MyProjects/Rust/terre/src/ecs/resource.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/yfan/MyProjects/Rust/terre/terre_core/src/lib.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/yfan/MyProjects/Rust/terre/terre_core/src/main.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/yfan/MyProjects/Rust/terre/terre_core/src/render/pass/mod.rs&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/terre_core/src/render/camera" />
@@ -273,6 +256,8 @@
       <workItem from="1703406749573" duration="4736000" />
       <workItem from="1703463539588" duration="30996000" />
       <workItem from="1703743733330" duration="31910000" />
+      <workItem from="1703955045865" duration="7598000" />
+      <workItem from="1704032570130" duration="55000" />
     </task>
     <task id="LOCAL-00001" summary="App Structure">
       <option name="closed" value="true" />
@@ -306,7 +291,15 @@
       <option name="project" value="LOCAL" />
       <updated>1703407084217</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="fix: fix Cargo.lock bug">
+      <option name="closed" value="true" />
+      <created>1703955136343</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1703955136343</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -318,7 +311,8 @@
     <MESSAGE value="- finished EguiRenderer" />
     <MESSAGE value="feat: add hecs crate" />
     <MESSAGE value="feat: add core workspace" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: add core workspace" />
+    <MESSAGE value="fix: fix Cargo.lock bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: fix Cargo.lock bug" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -3,9 +3,11 @@ pub mod bundle;
 use std::ops::Add;
 use cgmath::{InnerSpace, Quaternion, SquareMatrix, Vector3, Zero};
 use bytemuck::Zeroable;
-use winit::event::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
-use crate::ecs::resource::Resource;
+use winit::event::{ElementState, VirtualKeyCode};
+use terre_core_macros::Resource;
 
+
+#[derive(Resource)]
 pub struct Camera {
     pub eye: cgmath::Point3<f32>,
     pub target: cgmath::Point3<f32>,
@@ -15,8 +17,7 @@ pub struct Camera {
     pub znear: f32,
     pub zfar: f32,
 }
-impl Resource for Camera{}
-impl Resource for CameraController{}
+
 impl Camera {
     pub fn new(aspect: f32) -> Self {
         Self {
@@ -43,7 +44,7 @@ impl Camera {
         self.target += vec;
     }
 
-    pub fn rotate(&mut self, quaternion: &Quaternion<f32>){
+    pub fn rotate(&mut self, quaternion: &Quaternion<f32>) {
         let offset = self.target - self.eye;
         let a = quaternion * offset;
         self.target = self.eye.add(a);
