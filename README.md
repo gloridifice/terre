@@ -2,7 +2,7 @@
 
 ---
 Terre is a rust-wgpu based voxel game under development.  
-This project is for personal learning of rust, graphics, ecs, game engine, etc.
+This project is for my personal learning of rust, graphics, ecs, game engine, etc.
 
 Some dev-logs are published on my [blog](http://koiro.xyz).
 
